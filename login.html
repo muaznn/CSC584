@@ -122,9 +122,21 @@
                 role: 'user'
             };
         } else {
-            showAlert('login-alert', 'Invalid email or password', 'error');
-            return;
-        }
+                // Create a new user for demo
+                user = {
+                    id: Date.now(),
+                    name: 'New User',
+                    email: email,
+                    phone: '+1 (555) 000-0000',
+                    address: 'New Address',
+                    role: 'user'
+                };
+            }
+        
+        // else {
+        //     showAlert('login-alert', 'Invalid email or password', 'error');
+        //     return;
+        // }
         
         // Save user and redirect
         localStorage.setItem('recycleHubUser', JSON.stringify(user));
