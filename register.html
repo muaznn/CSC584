@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecycleHub - Register</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="login.html" class="logo">
+                <span>♻️</span>
+                <span>RecycleHub</span>
+            </a>
+            <nav>
+                <ul id="nav-menu">
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html">Register</a></li>
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <span id="user-display">Guest</span>
+                <span id="user-role" class="user-role">Guest</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="register-page" class="page-container active">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2 class="auth-title">Create Account</h2>
+                    <p class="auth-subtitle">Join our community recycling program</p>
+                    <div id="register-alert" class="alert alert-error"></div>
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label for="register-name" class="form-label">Full Name</label>
+                            <input type="text" id="register-name" class="form-control" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email" class="form-label">Email Address</label>
+                            <input type="email" id="register-email" class="form-control" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password" class="form-label">Password</label>
+                            <input type="password" id="register-password" class="form-control" placeholder="Create a password (min. 8 characters)" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-phone" class="form-label">Phone Number</label>
+                            <input type="tel" id="register-phone" class="form-control" placeholder="Enter your phone number" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-address" class="form-label">Address</label>
+                            <textarea id="register-address" class="form-control" placeholder="Enter your full address" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Register
+                        </button>
+                    </form>
+                    <div class="auth-footer">
+                        Already have an account? <a href="login.html" class="auth-link">Login here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo" style="font-size: 20px;">
+                    <span>♻️</span>
+                    <span>RecycleHub</span>
+                </div>
+                <div style="text-align: right;">
+                    <p>Community Recycling Collection System</p>
+                    <p>Helping communities recycle better</p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 RecycleHub. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="app-state.js"></script>
+    <script src="register.js"></script>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const phone = document.getElementById('register-phone').value;
+            const address = document.getElementById('register-address').value;
+
+            // Validation
+            if (!name || !email || !password || !phone || !address) {
+                showAlert('register-alert', 'Please fill in all fields', 'error');
+                return;
+            }
+
+            if (password.length < 8) {
+                showAlert('register-alert', 'Password must be at least 8 characters', 'error');
+                return;
+            }
+
+            // Create user account
+            const user = {
+                id: Date.now(),
+                name: name,
+                email: email,
+                phone: phone,
+                address: address,
+                role: 'user'
+            };
+
+            // Save to localStorage
+            localStorage.setItem('recycleHubUser', JSON.stringify(user));
+
+            // Show success and redirect
+            showAlert('register-alert', 'Registration successful! Redirecting to login...', 'success');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        });
+    });
+</script>
+</body>
+</html>

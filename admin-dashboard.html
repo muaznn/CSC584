@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecycleHub - Eco Rewards</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecycleHub - Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="admin-dashboard.html" class="logo">
+                <span>♻️</span>
+                <span>RecycleHub</span>
+            </a>
+            <nav>
+                <ul id="nav-menu">
+                    <!-- Populated by JavaScript -->
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <span id="user-display">Guest</span>
+                <span id="user-role" class="user-role">Guest</span>
+                <button id="logout-btn" class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-container active">
+            <h1 class="page-title">Admin Dashboard</h1>
+            
+            <div class="admin-controls">
+                <a href="all-requests.html" class="btn btn-primary">
+                    👁️ View All Requests
+                </a>
+<!--                <a href="assign-collectors.html" class="btn btn-secondary">
+                    👷 Assign Collectors
+                </a>-->
+<!--                <a href="generate-reports.html" class="btn">
+                    📊 Generate Reports
+                </a>-->
+            </div>
+
+            <div class="admin-stats">
+                <div class="admin-stat">
+                    <div class="stat-value" id="total-requests">0</div>
+                    <div class="stat-label">Total Requests</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="stat-value" id="pending-requests">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="stat-value" id="active-collectors">0</div>
+                    <div class="stat-label">Active Collectors</div>
+                </div>
+                <div class="admin-stat">
+                    <div class="stat-value" id="monthly-recycled">0 kg</div>
+                    <div class="stat-label">This Month</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Recent Pickup Requests</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Date</th>
+                                <th>Materials</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-requests-table">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo" style="font-size: 20px;">
+                    <span>♻️</span>
+                    <span>RecycleHub</span>
+                </div>
+                <div style="text-align: right;">
+                    <p>Community Recycling Collection System</p>
+                    <p>Helping communities recycle better</p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 RecycleHub. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="app-state.js"></script>
+    <script src="admin-dashboard.js"></script>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+        // Check if user is logged in as admin
+        const savedUser = localStorage.getItem('recycleHubUser');
+        if (!savedUser || JSON.parse(savedUser).role !== 'admin') {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Initialize app state
+        appState.currentUser = JSON.parse(savedUser);
+        appState.isLoggedIn = true;
+        appState.userRole = 'admin';
+
+        // Update navigation and user display
+        updateNavigation();
+        updateUserDisplay();
+
+        // Load admin dashboard data
+        loadAdminDashboardData();
+    });
+
+    function loadAdminDashboardData() {
+        const allPickups = appState.sampleData.pickups;
+        const pending = allPickups.filter(p => p.status === 'pending');
+        const monthlyWeight = allPickups
+            .filter(p => p.status === 'completed')
+            .reduce((sum, p) => sum + (p.finalWeight || 0), 0);
+
+        // Update stats
+        document.getElementById('total-requests').textContent = allPickups.length;
+        document.getElementById('pending-requests').textContent = pending.length;
+        document.getElementById('active-collectors').textContent = appState.sampleData.collectors.length;
+        document.getElementById('monthly-recycled').textContent = monthlyWeight + ' kg';
+
+        // Update requests table
+        const tableBody = document.getElementById('admin-requests-table');
+        tableBody.innerHTML = allPickups.slice(-5).reverse().map(p => `
+            <tr>
+                <td>REQ-${p.id.toString().padStart(4, '0')}</td>
+                <td>User ${p.userId}</td>
+                <td>${formatDate(p.date)}</td>
+                <td>${p.materials.join(', ')}</td>
+                <td><span class="status-badge status-${p.status}">${p.status}</span></td>
+                <td>
+                    <a href="request-details.html?id=${p.id}" class="btn">View</a>
+                </td>
+            </tr>
+        `).join('');
+    }
+</script>
+</body>
+</html>

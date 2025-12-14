@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecycleHub - Pickup History</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="user-dashboard.html" class="logo">
+                <span>♻️</span>
+                <span>RecycleHub</span>
+            </a>
+            <nav>
+                <ul id="nav-menu">
+                    <!-- Populated by JavaScript -->
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <span id="user-display">Guest</span>
+                <span id="user-role" class="user-role">Guest</span>
+                <button id="logout-btn" class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-container active">
+            <h1 class="page-title">My Pickup History</h1>
+            
+            <div class="card">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Pickup Date</th>
+                                <th>Materials</th>
+                                <th>Weight (kg)</th>
+                                <th>CO₂ Saved</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pickup-history-table">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo" style="font-size: 20px;">
+                    <span>♻️</span>
+                    <span>RecycleHub</span>
+                </div>
+                <div style="text-align: right;">
+                    <p>Community Recycling Collection System</p>
+                    <p>Helping communities recycle better</p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 RecycleHub. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="app-state.js"></script>
+    <script src="pickup-history.js"></script>
+
+    <script>
+       document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is logged in
+    const savedUser = localStorage.getItem('recycleHubUser');
+    if (!savedUser || JSON.parse(savedUser).role !== 'user') {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Initialize app state
+    appState.currentUser = JSON.parse(savedUser);
+    appState.isLoggedIn = true;
+    appState.userRole = 'user';
+    
+    // Update navigation and user display
+    updateNavigation();
+    updateUserDisplay();
+    
+    // Load pickup history
+    loadPickupHistory();
+});
+
+function loadPickupHistory() {
+    const tableBody = document.getElementById('pickup-history-table');
+    tableBody.innerHTML = '';
+    
+    const userPickups = appState.sampleData.pickups.filter(
+        pickup => pickup.userId === appState.currentUser.id
+    );
+    
+    if (userPickups.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                    <h3>No Pickup History</h3>
+                    <p>You haven't scheduled any pickups yet.</p>
+                    <a href="request-pickup.html" class="btn btn-primary" style="margin-top: 20px;">
+                        Schedule Your First Pickup
+                    </a>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    userPickups.forEach(pickup => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>REQ-${pickup.id.toString().padStart(4, '0')}</td>
+            <td>${formatDate(pickup.date)} (${pickup.time})</td>
+            <td>${pickup.materials.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}</td>
+            <td>${pickup.finalWeight || 'N/A'}</td>
+            <td>${pickup.co2Saved || 'N/A'}</td>
+            <td><span class="status-badge status-${pickup.status}">${pickup.status}</span></td>
+            <td>
+                <a href="request-details.html?id=${pickup.id}" class="btn">View Details</a>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+    </script>
+</body>
+</html>

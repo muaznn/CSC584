@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecycleHub - Request Details</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="#" id="dashboard-link" class="logo">
+                <span>♻️</span>
+                <span>RecycleHub</span>
+            </a>
+            <nav>
+                <ul id="nav-menu">
+                    <!-- Populated by JavaScript -->
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <span id="user-display">Guest</span>
+                <span id="user-role" class="user-role">Guest</span>
+                <button id="logout-btn" class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-container active">
+            <h1 class="page-title">Pickup Request Details</h1>
+            
+            <div class="card">
+                <div id="request-details-content">
+                    <!-- Populated by JavaScript -->
+                </div>
+                
+                <div id="admin-actions" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 2px solid var(--gray-medium);">
+                    <h3>Admin Actions</h3>
+                    <div style="display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="assignCollector()">Assign Collector</button>
+                        <select id="status-select" class="form-control" style="width: auto;">
+                            <option value="pending">Pending</option>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="updateStatus()">Update Status</button>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <label class="form-label">Final Weight (kg) - After Collection</label>
+                        <input type="number" id="final-weight" class="form-control" style="width: 200px;" min="0" step="0.1">
+                        <button class="btn btn-primary" onclick="recordFinalWeight()" style="margin-top: 10px;">Record Final Weight</button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 25px; display: flex; justify-content: space-between;">
+                    <a href="#" id="back-link" class="btn">Back</a>
+                    <button class="btn btn-danger" onclick="cancelRequest()" id="cancel-btn" style="display: none;">Cancel Request</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo" style="font-size: 20px;">
+                    <span>♻️</span>
+                    <span>RecycleHub</span>
+                </div>
+                <div style="text-align: right;">
+                    <p>Community Recycling Collection System</p>
+                    <p>Helping communities recycle better</p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 RecycleHub. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="app-state.js"></script>
+    <script src="request-details.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is logged in
+    const savedUser = localStorage.getItem('recycleHubUser');
+    if (!savedUser) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Initialize app state
+    appState.currentUser = JSON.parse(savedUser);
+    appState.isLoggedIn = true;
+    appState.userRole = appState.currentUser.role;
+    
+    // Update navigation and user display
+    updateNavigation();
+    updateUserDisplay();
+    
+    // Get request ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestId = parseInt(urlParams.get('id'));
+    
+    if (!requestId) {
+        redirectToDashboard();
+        return;
+    }
+    
+    // Load request details
+    loadRequestDetails(requestId);
+    
+    // Setup dashboard link
+    const dashboardLink = document.getElementById('dashboard-link');
+    if (appState.userRole === 'admin') {
+        dashboardLink.href = 'admin-dashboard.html';
+    } else {
+        dashboardLink.href = 'user-dashboard.html';
+    }
+});
+
+function loadRequestDetails(requestId) {
+    const pickup = appState.sampleData.pickups.find(p => p.id === requestId);
+    if (!pickup) {
+        alert('Request not found');
+        redirectToDashboard();
+        return;
+    }
+    
+    appState.currentPickupDetails = pickup;
+    
+    const user = appState.sampleData.users.find(u => u.id === pickup.userId);
+    const userName = user ? user.name : `User ${pickup.userId}`;
+    
+    const content = document.getElementById('request-details-content');
+    const backLink = document.getElementById('back-link');
+    const cancelBtn = document.getElementById('cancel-btn');
+    
+    // Set back link based on user role
+    if (appState.userRole === 'admin') {
+        backLink.href = 'all-requests.html';
+    } else {
+        backLink.href = 'pickup-history.html';
+    }
+    
+    // Show cancel button only for user's own pending/scheduled requests
+    if (appState.userRole === 'user' && pickup.userId === appState.currentUser.id && 
+        (pickup.status === 'pending' || pickup.status === 'scheduled')) {
+        cancelBtn.style.display = 'block';
+    }
+    
+    content.innerHTML = `
+        <h3>Request ID: REQ-${pickup.id.toString().padStart(4, '0')}</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+            <div>
+                <h4>Pickup Information</h4>
+                <p><strong>Date:</strong> ${formatDate(pickup.date)}</p>
+                <p><strong>Time Slot:</strong> ${pickup.time}</p>
+                <p><strong>Status:</strong> <span class="status-badge status-${pickup.status}">${pickup.status}</span></p>
+                ${pickup.collector ? `<p><strong>Assigned Collector:</strong> ${pickup.collector}</p>` : ''}
+                <p><strong>Requested By:</strong> ${userName}</p>
+                <p><strong>Created:</strong> ${formatDate(pickup.createdAt)}</p>
+            </div>
+            <div>
+                <h4>Materials</h4>
+                <ul style="list-style: none; padding: 0;">
+                    ${pickup.materials.map(material => `
+                        <li style="padding: 8px 0; border-bottom: 1px solid var(--gray-medium);">
+                            <strong>${material.charAt(0).toUpperCase() + material.slice(1)}:</strong> 
+                            ${pickup.weights[material] || 0} kg
+                        </li>
+                    `).join('')}
+                </ul>
+                ${Object.keys(pickup.weights).length > 0 ? `
+                    <div style="margin-top: 15px; padding: 10px; background: var(--lighter-green); border-radius: var(--radius);">
+                        <strong>Total Estimated Weight:</strong> 
+                        ${Object.values(pickup.weights).reduce((a, b) => a + b, 0)} kg
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+        ${pickup.notes ? `
+            <div style="margin-top: 20px; padding: 15px; background: var(--lighter-green); border-radius: var(--radius);">
+                <h4>Special Instructions:</h4>
+                <p style="margin-top: 5px;">${pickup.notes}</p>
+            </div>
+        ` : ''}
+        ${pickup.finalWeight ? `
+            <div style="margin-top: 20px; padding: 20px; background: linear-gradient(135deg, var(--light-green), var(--primary-green)); color: white; border-radius: var(--radius);">
+                <h4 style="color: white;">Collection Results</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 15px;">
+                    <div>
+                        <div style="font-size: 14px; opacity: 0.9;">Final Weight</div>
+                        <div style="font-size: 28px; font-weight: 700;">${pickup.finalWeight} kg</div>
+                    </div>
+                    ${pickup.co2Saved ? `
+                        <div>
+                            <div style="font-size: 14px; opacity: 0.9;">CO₂ Saved</div>
+                            <div style="font-size: 28px; font-weight: 700;">${pickup.co2Saved} kg</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; opacity: 0.9;">Points Earned</div>
+                            <div style="font-size: 28px; font-weight: 700;">${Math.floor(pickup.finalWeight * 10)}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        ` : ''}
+    `;
+    
+    // Show admin actions if user is admin
+    if (appState.userRole === 'admin') {
+        document.getElementById('admin-actions').style.display = 'block';
+        document.getElementById('status-select').value = pickup.status;
+    }
+}
+
+function assignCollector() {
+    if (!appState.currentPickupDetails) return;
+    
+    const availableCollectors = appState.sampleData.collectors.filter(c => c.status === 'available');
+    if (availableCollectors.length === 0) {
+        alert('No available collectors at the moment');
+        return;
+    }
+    
+    const collectorNames = availableCollectors.map(c => c.name).join(', ');
+    const collectorName = prompt(`Available collectors: ${collectorNames}\n\nEnter collector name:`, availableCollectors[0].name);
+    
+    if (collectorName) {
+        appState.currentPickupDetails.collector = collectorName;
+        appState.currentPickupDetails.status = 'scheduled';
+        
+        // Update collector status
+        const collector = appState.sampleData.collectors.find(c => c.name === collectorName);
+        if (collector) {
+            collector.status = 'busy';
+        }
+        
+        alert(`Collector ${collectorName} assigned successfully`);
+        loadRequestDetails(appState.currentPickupDetails.id);
+    }
+}
+
+function updateStatus() {
+    if (!appState.currentPickupDetails) return;
+    
+    const newStatus = document.getElementById('status-select').value;
+    appState.currentPickupDetails.status = newStatus;
+    
+    // If status is completed, ask for final weight
+    if (newStatus === 'completed' && !appState.currentPickupDetails.finalWeight) {
+        const weight = prompt('Enter final weight collected (kg):');
+        if (weight && !isNaN(weight) && parseFloat(weight) > 0) {
+            appState.currentPickupDetails.finalWeight = parseFloat(weight);
+            appState.currentPickupDetails.co2Saved = Math.round(weight * 1.33);
+        }
+    }
+    
+    alert(`Status updated to ${newStatus}`);
+    loadRequestDetails(appState.currentPickupDetails.id);
+}
+
+function recordFinalWeight() {
+    if (!appState.currentPickupDetails) return;
+    
+    const weight = parseFloat(document.getElementById('final-weight').value);
+    if (!weight || weight <= 0) {
+        alert('Please enter a valid weight');
+        return;
+    }
+    
+    appState.currentPickupDetails.finalWeight = weight;
+    appState.currentPickupDetails.co2Saved = Math.round(weight * 1.33);
+    appState.currentPickupDetails.status = 'completed';
+    
+    alert(`Final weight recorded: ${weight} kg\nCO₂ Saved: ${appState.currentPickupDetails.co2Saved} kg`);
+    loadRequestDetails(appState.currentPickupDetails.id);
+}
+
+function cancelRequest() {
+    if (!appState.currentPickupDetails) return;
+    
+    if (confirm('Are you sure you want to cancel this pickup request?')) {
+        appState.currentPickupDetails.status = 'cancelled';
+        
+        // Free up collector if assigned
+        if (appState.currentPickupDetails.collector) {
+            const collector = appState.sampleData.collectors.find(c => c.name === appState.currentPickupDetails.collector);
+            if (collector) {
+                collector.status = 'available';
+            }
+        }
+        
+        alert('Pickup request cancelled');
+        window.location.href = 'pickup-history.html';
+    }
+}
+
+function redirectToDashboard() {
+    if (appState.userRole === 'admin') {
+        window.location.href = 'admin-dashboard.html';
+    } else {
+        window.location.href = 'user-dashboard.html';
+    }
+}
+    </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecycleHub - User Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="user-dashboard.html" class="logo">
+                <span>♻️</span>
+                <span>RecycleHub</span>
+            </a>
+            <nav>
+                <ul id="nav-menu">
+                    <!-- Populated by JavaScript -->
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <span id="user-display">Guest</span>
+                <span id="user-role" class="user-role">Guest</span>
+                <button id="logout-btn" class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-container active">
+            <h1 class="page-title">Dashboard Overview</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-pickups">0</div>
+                    <div class="stat-label">Total Pickups</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-weight">0 kg</div>
+                    <div class="stat-label">Recycled</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="co2-saved">0 kg</div>
+                    <div class="stat-label">CO₂ Saved</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="user-points">0</div>
+                    <div class="stat-label">Eco Points</div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <a href="request-pickup.html" class="btn btn-primary">
+                    📅 Schedule New Pickup
+                </a>
+                <a href="pickup-history.html" class="btn btn-secondary">
+                    📋 View Pickup History
+                </a>
+                <a href="profile.html" class="btn">
+                    👤 Update Profile
+                </a>
+                <a href="rewards.html" class="btn btn-secondary">
+                    🏆 View Rewards
+                </a>
+            </div>
+
+            <div class="card">
+                <h3>Upcoming Pickups</h3>
+                <div class="pickup-list" id="upcoming-pickups">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Recent Activity</h3>
+                <div id="recent-activity">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo" style="font-size: 20px;">
+                    <span>♻️</span>
+                    <span>RecycleHub</span>
+                </div>
+                <div style="text-align: right;">
+                    <p>Community Recycling Collection System</p>
+                    <p>Helping communities recycle better</p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 RecycleHub. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="app-state.js"></script>
+    <script src="user-dashboard.js"></script>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+        // Check if user is logged in
+        const savedUser = localStorage.getItem('recycleHubUser');
+        if (!savedUser || JSON.parse(savedUser).role !== 'user') {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Initialize app state
+        appState.currentUser = JSON.parse(savedUser);
+        appState.isLoggedIn = true;
+        appState.userRole = 'user';
+
+        // Update navigation and user display
+        updateNavigation();
+        updateUserDisplay();
+
+        // Load dashboard data
+        loadDashboardData();
+    });
+
+    function loadDashboardData() {
+        const userPickups = appState.sampleData.pickups.filter(
+            p => p.userId === appState.currentUser.id
+        );
+
+        const completedPickups = userPickups.filter(p => p.status === 'completed');
+        const totalWeight = completedPickups.reduce((sum, p) => sum + (p.finalWeight || 0), 0);
+        const totalCO2 = completedPickups.reduce((sum, p) => sum + (p.co2Saved || 0), 0);
+
+        // Update stats
+        document.getElementById('total-pickups').textContent = userPickups.length;
+        document.getElementById('total-weight').textContent = totalWeight + ' kg';
+        document.getElementById('co2-saved').textContent = totalCO2 + ' kg';
+        document.getElementById('user-points').textContent = Math.floor(totalWeight * 10);
+
+        // Update upcoming pickups
+        const upcomingList = document.getElementById('upcoming-pickups');
+        const upcoming = userPickups.filter(p => p.status === 'scheduled' || p.status === 'pending');
+
+        upcomingList.innerHTML = upcoming.length > 0 ? 
+            upcoming.map(p => `
+                <div class="pickup-item">
+                    <div>
+                        <strong>${formatDate(p.date)} (${p.time})</strong><br>
+                        <span>${p.materials.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}</span>
+                    </div>
+                    <span class="status-badge status-${p.status}">${p.status}</span>
+                </div>
+            `).join('') :
+            '<p>No upcoming pickups. <a href="request-pickup.html">Schedule one now!</a></p>';
+
+        // Update recent activity
+        const activityList = document.getElementById('recent-activity');
+        activityList.innerHTML = userPickups.slice(-3).reverse().map(p => `
+            <div style="padding: 10px 0; border-bottom: 1px solid var(--gray-medium);">
+                <strong>Pickup ${p.status}</strong><br>
+                <span>${formatDate(p.date)} - ${p.materials.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}</span>
+            </div>
+        `).join('');
+    }
+</script>
+</body>
+</html>

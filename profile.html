@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecycleHub - My Profile</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="user-dashboard.html" class="logo">
+                <span>♻️</span>
+                <span>RecycleHub</span>
+            </a>
+            <nav>
+                <ul id="nav-menu">
+                    <!-- Populated by JavaScript -->
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <span id="user-display">Guest</span>
+                <span id="user-role" class="user-role">Guest</span>
+                <button id="logout-btn" class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-container active">
+            <h1 class="page-title">My Profile</h1>
+            
+            <div class="card">
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="profile-name" class="form-label">Full Name</label>
+                        <input type="text" id="profile-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-email" class="form-label">Email Address</label>
+                        <input type="email" id="profile-email" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-phone" class="form-label">Phone Number</label>
+                        <input type="tel" id="profile-phone" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-address" class="form-label">Address</label>
+                        <textarea id="profile-address" class="form-control" rows="3" required></textarea>
+                    </div>
+                    
+                    <h3 style="margin-top: 30px; margin-bottom: 20px; color: var(--primary-green);">Change Password</h3>
+                    <div class="form-group">
+                        <label for="current-password" class="form-label">Current Password</label>
+                        <input type="password" id="current-password" class="form-control" placeholder="Enter current password">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password" class="form-label">New Password</label>
+                        <input type="password" id="new-password" class="form-control" placeholder="Enter new password">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password" class="form-label">Confirm New Password</label>
+                        <input type="password" id="confirm-password" class="form-control" placeholder="Confirm new password">
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px; margin-top: 25px;">
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                        <a href="user-dashboard.html" class="btn">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo" style="font-size: 20px;">
+                    <span>♻️</span>
+                    <span>RecycleHub</span>
+                </div>
+                <div style="text-align: right;">
+                    <p>Community Recycling Collection System</p>
+                    <p>Helping communities recycle better</p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 RecycleHub. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="app-state.js"></script>
+    <script src="profile.js"></script>
+    <script>
+            document.addEventListener('DOMContentLoaded', function() {
+        // Check if user is logged in
+        const savedUser = localStorage.getItem('recycleHubUser');
+        if (!savedUser) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Initialize app state
+        appState.currentUser = JSON.parse(savedUser);
+        appState.isLoggedIn = true;
+        appState.userRole = appState.currentUser.role;
+
+        // Update navigation and user display
+        updateNavigation();
+        updateUserDisplay();
+
+        // Load user data
+        loadUserData();
+
+        // Form submission
+        document.getElementById('profile-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            updateProfile();
+        });
+    });
+
+    function loadUserData() {
+        document.getElementById('profile-name').value = appState.currentUser.name || '';
+        document.getElementById('profile-email').value = appState.currentUser.email || '';
+        document.getElementById('profile-phone').value = appState.currentUser.phone || '';
+        document.getElementById('profile-address').value = appState.currentUser.address || '';
+    }
+
+    function updateProfile() {
+        const name = document.getElementById('profile-name').value;
+        const phone = document.getElementById('profile-phone').value;
+        const address = document.getElementById('profile-address').value;
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        // Update user info
+        appState.currentUser.name = name;
+        appState.currentUser.phone = phone;
+        appState.currentUser.address = address;
+
+        // Handle password change
+        if (newPassword) {
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match');
+                return;
+            }
+            if (!currentPassword) {
+                alert('Please enter current password to change password');
+                return;
+            }
+            // Note: In real app, verify current password first
+            // For demo, we'll just update it
+        }
+
+        // Save to localStorage
+        localStorage.setItem('recycleHubUser', JSON.stringify(appState.currentUser));
+
+        // Clear password fields
+        document.getElementById('current-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+
+        // Update UI
+        updateUserDisplay();
+
+        alert('Profile updated successfully!');
+        window.location.href = appState.userRole === 'admin' ? 'admin-dashboard.html' : 'user-dashboard.html';
+    }
+    </script>
+</body>
+</html>

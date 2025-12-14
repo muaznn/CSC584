@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecycleHub - All Requests</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="admin-dashboard.html" class="logo">
+                <span>♻️</span>
+                <span>RecycleHub</span>
+            </a>
+            <nav>
+                <ul id="nav-menu">
+                    <!-- Populated by JavaScript -->
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <span id="user-display">Guest</span>
+                <span id="user-role" class="user-role">Guest</span>
+                <button id="logout-btn" class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-container active">
+            <h1 class="page-title">All Pickup Requests</h1>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('all')">All Requests</button>
+                <button class="tab" onclick="switchTab('pending')">Pending</button>
+                <button class="tab" onclick="switchTab('scheduled')">Scheduled</button>
+                <button class="tab" onclick="switchTab('completed')">Completed</button>
+            </div>
+            
+            <div class="tab-content active" id="all-tab">
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>User</th>
+                                    <th>Pickup Date</th>
+                                    <th>Materials</th>
+                                    <th>Status</th>
+                                    <th>Collector</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-requests-table">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="pending-tab">
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>User</th>
+                                    <th>Pickup Date</th>
+                                    <th>Materials</th>
+                                    <th>Status</th>
+                                    <th>Collector</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-requests-table">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="scheduled-tab">
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>User</th>
+                                    <th>Pickup Date</th>
+                                    <th>Materials</th>
+                                    <th>Status</th>
+                                    <th>Collector</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scheduled-requests-table">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="completed-tab">
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>User</th>
+                                    <th>Pickup Date</th>
+                                    <th>Materials</th>
+                                    <th>Weight (kg)</th>
+                                    <th>CO₂ Saved</th>
+                                    <th>Collector</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="completed-requests-table">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo" style="font-size: 20px;">
+                    <span>♻️</span>
+                    <span>RecycleHub</span>
+                </div>
+                <div style="text-align: right;">
+                    <p>Community Recycling Collection System</p>
+                    <p>Helping communities recycle better</p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 RecycleHub. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="app-state.js"></script>
+    <script src="all-requests.js"></script>
+
+    <script>
+            document.addEventListener('DOMContentLoaded', function() {
+         // Check if user is logged in as admin
+         const savedUser = localStorage.getItem('recycleHubUser');
+         if (!savedUser || JSON.parse(savedUser).role !== 'admin') {
+             window.location.href = 'login.html';
+             return;
+         }
+
+         // Initialize app state
+         appState.currentUser = JSON.parse(savedUser);
+         appState.isLoggedIn = true;
+         appState.userRole = 'admin';
+
+         // Update navigation and user display
+         updateNavigation();
+         updateUserDisplay();
+
+         // Load all requests
+         loadAllRequests();
+         loadPendingRequests();
+         loadScheduledRequests();
+         loadCompletedRequests();
+     });
+
+     function switchTab(tabName) {
+         // Update tabs
+         document.querySelectorAll('.tab').forEach(tab => {
+             tab.classList.remove('active');
+         });
+
+         // Update tab content
+         document.querySelectorAll('.tab-content').forEach(content => {
+             content.classList.remove('active');
+         });
+
+         // Activate clicked tab
+         const clickedTab = event.target;
+         clickedTab.classList.add('active');
+         document.getElementById(`${tabName}-tab`).classList.add('active');
+     }
+
+     function loadAllRequests() {
+         const tableBody = document.getElementById('all-requests-table');
+         tableBody.innerHTML = '';
+
+         if (appState.sampleData.pickups.length === 0) {
+             tableBody.innerHTML = `
+                 <tr>
+                     <td colspan="7" style="text-align: center; padding: 40px;">
+                         <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                         <h3>No Pickup Requests</h3>
+                         <p>No pickup requests have been made yet.</p>
+                     </td>
+                 </tr>
+             `;
+             return;
+         }
+
+         appState.sampleData.pickups.forEach(pickup => {
+             const user = appState.sampleData.users.find(u => u.id === pickup.userId);
+             const userName = user ? user.name : `User ${pickup.userId}`;
+
+             const row = document.createElement('tr');
+             row.innerHTML = `
+                 <td>REQ-${pickup.id.toString().padStart(4, '0')}</td>
+                 <td>${userName}</td>
+                 <td>${formatDate(pickup.date)} (${pickup.time})</td>
+                 <td>${pickup.materials.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}</td>
+                 <td><span class="status-badge status-${pickup.status}">${pickup.status}</span></td>
+                 <td>${pickup.collector || 'Not assigned'}</td>
+                 <td>
+                     <a href="request-details.html?id=${pickup.id}" class="btn">View</a>
+                 </td>
+             `;
+             tableBody.appendChild(row);
+         });
+     }
+
+     function loadPendingRequests() {
+         const tableBody = document.getElementById('pending-requests-table');
+         tableBody.innerHTML = '';
+
+         const pendingRequests = appState.sampleData.pickups.filter(p => p.status === 'pending');
+
+         if (pendingRequests.length === 0) {
+             tableBody.innerHTML = `
+                 <tr>
+                     <td colspan="7" style="text-align: center; padding: 40px;">
+                         <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
+                         <h3>No Pending Requests</h3>
+                         <p>All requests have been processed.</p>
+                     </td>
+                 </tr>
+             `;
+             return;
+         }
+
+         pendingRequests.forEach(pickup => {
+             const user = appState.sampleData.users.find(u => u.id === pickup.userId);
+             const userName = user ? user.name : `User ${pickup.userId}`;
+
+             const row = document.createElement('tr');
+             row.innerHTML = `
+                 <td>REQ-${pickup.id.toString().padStart(4, '0')}</td>
+                 <td>${userName}</td>
+                 <td>${formatDate(pickup.date)} (${pickup.time})</td>
+                 <td>${pickup.materials.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}</td>
+                 <td><span class="status-badge status-pending">pending</span></td>
+                 <td>Not assigned</td>
+                 <td>
+                     <a href="request-details.html?id=${pickup.id}" class="btn btn-primary">Assign Collector</a>
+                 </td>
+             `;
+             tableBody.appendChild(row);
+         });
+     }
+
+     function loadScheduledRequests() {
+         const tableBody = document.getElementById('scheduled-requests-table');
+         tableBody.innerHTML = '';
+
+         const scheduledRequests = appState.sampleData.pickups.filter(p => p.status === 'scheduled');
+
+         if (scheduledRequests.length === 0) {
+             tableBody.innerHTML = `
+                 <tr>
+                     <td colspan="7" style="text-align: center; padding: 40px;">
+                         <div style="font-size: 48px; margin-bottom: 20px;">📅</div>
+                         <h3>No Scheduled Requests</h3>
+                         <p>No requests are scheduled for pickup.</p>
+                     </td>
+                 </tr>
+             `;
+             return;
+         }
+
+         scheduledRequests.forEach(pickup => {
+             const user = appState.sampleData.users.find(u => u.id === pickup.userId);
+             const userName = user ? user.name : `User ${pickup.userId}`;
+
+             const row = document.createElement('tr');
+             row.innerHTML = `
+                 <td>REQ-${pickup.id.toString().padStart(4, '0')}</td>
+                 <td>${userName}</td>
+                 <td>${formatDate(pickup.date)} (${pickup.time})</td>
+                 <td>${pickup.materials.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}</td>
+                 <td><span class="status-badge status-scheduled">scheduled</span></td>
+                 <td>${pickup.collector || 'Not assigned'}</td>
+                 <td>
+                     <a href="request-details.html?id=${pickup.id}" class="btn">Update Status</a>
+                 </td>
+             `;
+             tableBody.appendChild(row);
+         });
+     }
+
+     function loadCompletedRequests() {
+         const tableBody = document.getElementById('completed-requests-table');
+         tableBody.innerHTML = '';
+
+         const completedRequests = appState.sampleData.pickups.filter(p => p.status === 'completed');
+
+         if (completedRequests.length === 0) {
+             tableBody.innerHTML = `
+                 <tr>
+                     <td colspan="8" style="text-align: center; padding: 40px;">
+                         <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
+                         <h3>No Completed Requests</h3>
+                         <p>No requests have been completed yet.</p>
+                     </td>
+                 </tr>
+             `;
+             return;
+         }
+
+         completedRequests.forEach(pickup => {
+             const user = appState.sampleData.users.find(u => u.id === pickup.userId);
+             const userName = user ? user.name : `User ${pickup.userId}`;
+
+             const row = document.createElement('tr');
+             row.innerHTML = `
+                 <td>REQ-${pickup.id.toString().padStart(4, '0')}</td>
+                 <td>${userName}</td>
+                 <td>${formatDate(pickup.date)} (${pickup.time})</td>
+                 <td>${pickup.materials.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}</td>
+                 <td>${pickup.finalWeight || 'N/A'}</td>
+                 <td>${pickup.co2Saved || 'N/A'}</td>
+                 <td>${pickup.collector || 'Not recorded'}</td>
+                 <td>
+                     <a href="request-details.html?id=${pickup.id}" class="btn">View Details</a>
+                 </td>
+             `;
+             tableBody.appendChild(row);
+         });
+     }
+    </script>
+</body>
+</html>

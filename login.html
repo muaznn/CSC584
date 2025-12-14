@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecycleHub - Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="login.html" class="logo">
+                <span>♻️</span>
+                <span>RecycleHub</span>
+            </a>
+            <nav>
+                <ul id="nav-menu">
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html">Register</a></li>
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <span id="user-display">Guest</span>
+                <span id="user-role" class="user-role">Guest</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="login-page" class="page-container active">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h2 class="auth-title">Welcome Back</h2>
+                    <p class="auth-subtitle">Login to manage your recycling pickups</p>
+                    <div id="login-alert" class="alert alert-error"></div>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-email" class="form-label">Email Address</label>
+                            <input type="email" id="login-email" class="form-control" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password" class="form-label">Password</label>
+                            <input type="password" id="login-password" class="form-control" placeholder="Enter your password" required>
+                        </div>
+                        <div class="form-group" style="text-align: right;">
+                            <a href="#" class="auth-link">Forgot Password?</a>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Login
+                        </button>
+                    </form>
+                    <div class="auth-footer">
+                        Don't have an account? <a href="register.html" class="auth-link">Register here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="logo" style="font-size: 20px;">
+                    <span>♻️</span>
+                    <span>RecycleHub</span>
+                </div>
+                <div style="text-align: right;">
+                    <p>Community Recycling Collection System</p>
+                    <p>Helping communities recycle better</p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 RecycleHub. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="app-state.js"></script>
+    <script src="login.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is already logged in
+    const savedUser = localStorage.getItem('recycleHubUser');
+    if (savedUser) {
+        const user = JSON.parse(savedUser);
+        if (user.role === 'admin') {
+            window.location.href = 'admin-dashboard.html';
+        } else {
+            window.location.href = 'user-dashboard.html';
+        }
+    }
+
+    // Login form submission
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        
+        if (!email || !password) {
+            showAlert('login-alert', 'Please enter both email and password', 'error');
+            return;
+        }
+        
+        // Simulate authentication
+        let user = null;
+        if (email === 'admin@recyclehub.com' && password === 'admin123') {
+            user = {
+                id: 2,
+                name: 'Admin User',
+                email: email,
+                phone: '+1 (555) 987-6543',
+                address: '456 Admin Avenue',
+                role: 'admin'
+            };
+        } else if (email === 'john@example.com' && password === 'password123') {
+            user = {
+                id: 1,
+                name: 'John Doe',
+                email: email,
+                phone: '+1 (555) 123-4567',
+                address: '123 Green Street',
+                role: 'user'
+            };
+        } else {
+            showAlert('login-alert', 'Invalid email or password', 'error');
+            return;
+        }
+        
+        // Save user and redirect
+        localStorage.setItem('recycleHubUser', JSON.stringify(user));
+        
+        if (user.role === 'admin') {
+            window.location.href = 'admin-dashboard.html';
+        } else {
+            window.location.href = 'user-dashboard.html';
+        }
+    });
+});
+</script>
+</body>
+</html>
