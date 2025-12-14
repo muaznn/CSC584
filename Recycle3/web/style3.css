@@ -1,0 +1,315 @@
+/* =========================================
+   1. CSS Variables & Global Reset
+   ========================================= */
+:root {
+    --primary-green: #2e7d32;
+    --light-green: #4caf50;
+    --lighter-green: #e8f5e9;
+    --dark-green: #1b5e20;
+    --secondary-orange: #ff9800;
+    --danger-red: #d32f2f;
+    --warning-yellow: #ffc107;
+    --info-blue: #2196f3;
+    --gray-light: #f5f5f5;
+    --gray-medium: #e0e0e0;
+    --gray-dark: #757575;
+    --text-dark: #333;
+    --white: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --radius: 8px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+    background-color: var(--gray-light);
+    color: var(--text-dark);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* =========================================
+   2. Layout & Navigation
+   ========================================= */
+header {
+    background-color: var(--primary-green);
+    color: var(--white);
+    padding: 1rem 0;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+}
+
+nav a {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+nav a:hover {
+    opacity: 0.8;
+}
+
+.page-container {
+    padding: 40px 0;
+    display: none; /* Controlled by JS */
+}
+
+.page-container.active {
+    display: block;
+}
+
+.page-title {
+    margin-bottom: 30px;
+    color: var(--dark-green);
+    border-bottom: 2px solid var(--light-green);
+    padding-bottom: 10px;
+}
+
+/* =========================================
+   3. Components (Buttons, Cards, Badges)
+   ========================================= */
+.card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 25px;
+    box-shadow: var(--shadow);
+    margin-bottom: 25px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.btn-primary {
+    background-color: var(--primary-green);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-green);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-orange);
+    color: var(--white);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--primary-green);
+    color: var(--primary-green);
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-pending { background: var(--warning-yellow); color: #856404; }
+.status-scheduled { background: var(--info-blue); color: var(--white); }
+.status-completed { background: var(--light-green); color: var(--white); }
+
+/* =========================================
+   4. Tables & Tabs
+   ========================================= */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-medium);
+}
+
+th {
+    background-color: var(--gray-light);
+    color: var(--gray-dark);
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab {
+    padding: 10px 20px;
+    background: var(--gray-medium);
+    border-radius: var(--radius) var(--radius) 0 0;
+    cursor: pointer;
+}
+
+.tab.active {
+    background: var(--white);
+    font-weight: bold;
+    border-bottom: 3px solid var(--primary-green);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* =========================================
+   5. Rewards Specific Styling
+   ========================================= */
+.rewards-header {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.reward-balance-card {
+    background: linear-gradient(135deg, #ffd700, #ff9800);
+    color: white;
+    padding: 20px;
+    border-radius: var(--radius);
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.reward-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.reward-card {
+    border: 1px solid var(--gray-medium);
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.reward-card:hover {
+    transform: translateY(-5px);
+}
+
+.progress-bar-container {
+    background-color: var(--gray-medium);
+    height: 8px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.progress-bar-fill {
+    background-color: var(--primary-green);
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s;
+}
+
+/* =========================================
+   6. Modals & Animations
+   ========================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none; /* Controlled by JS */
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: var(--radius);
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.confetti-anim {
+    animation: celebrate 0.5s ease-out;
+}
+
+@keyframes celebrate {
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================
+   7. Dashboard Stats
+   ========================================= */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--white);
+    padding: 20px;
+    border-radius: var(--radius);
+    text-align: center;
+    box-shadow: var(--shadow);
+}
